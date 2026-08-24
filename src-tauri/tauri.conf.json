@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/refs/heads/v2/core/tauri-config-schema/schema.json",
   "productName": "ExcelDateFixerPro",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.maivan.datefixer",
   "build": {
     "beforeDevCommand": "bun run dev",
@@ -21,7 +21,8 @@
         "decorations": false,
         "transparent": false,
         "resizable": true,
-        "center": true
+        "center": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {
@@ -30,13 +31,18 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }

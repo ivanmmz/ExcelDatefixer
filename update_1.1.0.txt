@@ -1,0 +1,23 @@
+版本更新说明 (Version Update Notes)
+===========================================
+版本号 (Version): 1.1.0
+更新日期 (Date): 2026-07-04
+===========================================
+
+中文说明：
+-------------------------------------------
+1. 【多工作表修复】修复了之前版本中只能修改 Excel 文件中第一个工作表（Worksheet）数据的 bug。现在更新后，处理逻辑已完全覆盖并可正确应用到工作簿中的所有工作表。
+2. 【动态列名匹配】移除了之前硬编码第一列（A列）和第二列（B列）为日期和时间的逻辑。改为动态检测：在每个工作表中，自动识别第一行表头中包含“date”/“日期”或“time”/“时间”的列作为处理目标列。
+3. 【更稳定的行清除】在向工作表重新写入处理后数据前，使用更稳定的动态 while 循环逐行清除历史行，避免由于 ExcelJS 缓存导致后续工作表清空不完全或写入行偏移的问题。
+4. 【动态样式格式化】更新了 Smart Format 任务，使其能够自适应各个工作表不同的日期时间列位置进行针对性的单元格格式和公式修饰。
+5. 【拖放功能修复】修复了 Tauri 2.0 原生窗口文件拖放捕获导致前端 HTML5 拖放事件被拦截的 bug。现已在 `tauri.conf.json` 中配置禁用原生拖放，使整个 GUI 界面皆可正常拖入导入 Excel/CSV 文件。
+6. 【界面与布局优化】将 “Add File” 按钮样式修改为与 “Clear All” 一致的精致半透明边框设计；将 “RUN PIPELINE” 与 “Export” 按钮移到 “Clear All” 按钮下方紧密排列；将主窗口布局调整为不产生全局滚动条，从而让 “File Queue” 与 “System Logs” 窗口的大小可以完美随主窗口自适应缩放。
+
+English Notes:
+-------------------------------------------
+1. [Multi-Worksheet Bug Fix]: Fixed a bug where the utility only processed the first worksheet of an Excel workbook. It now iterates and processes all worksheets correctly.
+2. [Dynamic Column Detection]: Removed the hardcoded columns A (0) and B (1) assumption. The utility now scans the header row (row 1) of each sheet dynamically to find columns matching "date" or "time" (case-insensitive, supporting Chinese terms "日期" and "时间").
+3. [Robust Row Clearing]: Replaced the cached `for` loop row splicing with a dynamic `while (sheet.rowCount > 1)` row clearing routine. This prevents ExcelJS cached row counts or index shifting issues on subsequent worksheets.
+4. [Dynamic Smart Formatting]: Updated the Smart Format routine to adapt dynamically to the detected date/time columns of each worksheet.
+5. [Drag-and-Drop Fix]: Fixed a bug where Tauri 2.0's native drag-and-drop system intercepted HTML5 drag-and-drop events. Disabled native drag-and-drop in `tauri.conf.json` to allow dropping Excel/CSV files directly onto the entire GUI.
+6. [UI & Layout Refinement]: Re-styled the "Add File" button to match the translucent bordered look of "Clear All"; moved the "RUN PIPELINE" and "Export" buttons directly under "Clear All" to keep them logically grouped; restricted global page overflow so that the "File Queue" and "System Logs" panels resize dynamically and responsively with the window instead of pushing content off-screen.

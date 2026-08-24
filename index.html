@@ -22,7 +22,7 @@
     </div>
   </header>
 
-  <main class="flex-grow flex flex-col p-6 pb-2 gap-card-gap overflow-y-auto custom-scrollbar relative">
+  <main class="flex-grow flex flex-col p-6 pb-2 gap-card-gap overflow-hidden relative">
     <!-- Task Cards Row (5 horizontal cards) -->
     <section class="grid grid-cols-5 gap-card-gap shrink-0">
       <!-- Card 1: Date Format -->
@@ -94,7 +94,7 @@
     </section>
 
     <!-- Preview Grid Area -->
-    <section class="flex-grow bg-surface-container-low/50 backdrop-blur-2xl border border-white/10 rounded-xl overflow-hidden flex flex-col min-h-[120px]">
+    <section class="flex-[2] bg-surface-container-low/50 backdrop-blur-2xl border border-white/10 rounded-xl overflow-hidden flex flex-col min-h-[180px]">
       <div class="bg-surface-container-high border-b border-white/10 p-2 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="font-label-caps text-label-caps text-on-surface-variant ml-2 uppercase">Data Preview • Local Environment</span>
@@ -123,10 +123,10 @@
     </section>
 
     <!-- Bottom Panel -->
-    <section class="h-40 grid grid-cols-12 gap-card-gap shrink-0">
+    <section class="flex-1 grid grid-cols-12 gap-card-gap min-h-[160px] overflow-hidden">
       <!-- Left: Actions -->
       <div class="col-span-3 flex flex-col gap-1.5">
-        <button id="btn-add" class="flex items-center gap-2.5 w-full py-1.5 px-3 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/10">
+        <button id="btn-add" class="flex items-center gap-2.5 w-full py-1.5 px-3 border border-white/10 bg-surface-container text-on-surface rounded-lg text-xs font-semibold hover:bg-surface-container-highest transition-all active:scale-95">
           <span class="material-symbols-outlined text-sm">add</span>
           Add File
         </button>
@@ -134,19 +134,17 @@
           <span class="material-symbols-outlined text-sm">delete_sweep</span>
           Clear All
         </button>
-        <div class="mt-auto flex flex-col gap-1.5">
-          <button id="btn-run" class="flex items-center justify-center gap-2.5 w-full py-2 px-4 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold hover:brightness-110 transition-all active:scale-[0.98] border border-white/20">
-            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-            RUN PIPELINE
-          </button>
-          <button id="btn-export" disabled class="flex items-center justify-center gap-2.5 w-full py-2 px-4 bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/30 transition-all active:scale-[0.98]">
-            <span class="material-symbols-outlined text-sm">download</span>
-            Export / Save As (另存为/导出)
-          </button>
-        </div>
+        <button id="btn-run" class="flex items-center justify-center gap-2.5 w-full py-2 px-4 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold hover:brightness-110 transition-all active:scale-[0.98] border border-white/20">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          RUN PIPELINE
+        </button>
+        <button id="btn-export" disabled class="flex items-center justify-center gap-2.5 w-full py-2 px-4 bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/30 transition-all active:scale-[0.98]">
+          <span class="material-symbols-outlined text-sm">download</span>
+          Export / Save As (另存为/导出)
+        </button>
       </div>
       <!-- Middle: File Queue -->
-      <div class="col-span-4 bg-surface-container border border-white/10 rounded-xl flex flex-col">
+      <div class="col-span-4 bg-surface-container border border-white/10 rounded-xl flex flex-col min-h-0">
         <div class="p-3 border-b border-white/5 font-label-caps text-label-caps text-on-surface-variant flex items-center justify-between">
           <span>FILE QUEUE</span>
           <span class="material-symbols-outlined text-sm">description</span>
@@ -156,12 +154,12 @@
         </div>
       </div>
       <!-- Right: System Logs -->
-      <div class="col-span-5 bg-surface-container-high border border-white/10 rounded-xl flex flex-col">
+      <div class="col-span-5 bg-surface-container-high border border-white/10 rounded-xl flex flex-col min-h-0">
         <div class="p-3 border-b border-white/5 font-label-caps text-label-caps text-on-surface-variant flex items-center justify-between">
           <span>SYSTEM LOGS</span>
           <span class="material-symbols-outlined text-sm">terminal</span>
         </div>
-        <div id="log-area" class="flex-grow p-4 font-terminal-text text-terminal-text custom-scrollbar overflow-auto leading-relaxed">
+        <div id="log-area" class="flex-grow p-4 font-terminal-text text-terminal-text custom-scrollbar overflow-auto leading-relaxed select-text">
           <div class="opacity-80"><span class="ts"></span> System initialized. Mica engine active.</div>
         </div>
       </div>

@@ -409,14 +409,33 @@ export function taskDateToValue(rows, targets) {
  * Apply Excel number formatting to date/time cells in the workbook.
  * Returns count of styled cells.
  */
-export function taskSmartFormat(workbook, dateFormat, timeFormat, targets) {
+export function taskSmartFormat(workbook, dateFormat, timeFormat) {
   const dtFmt = `${dateFormat} ${timeFormat}`;
   let count = 0;
 
-  workbook.eachSheet(sheet => {
-    if (sheet.rowCount < 2) return;
+  const sheets = workbook.worksheets;
+  for (const sheet of sheets) {
+    if (sheet.rowCount < 2) continue;
+
+    // Dynamically detect Date and Time columns by reading row 1 headers
+    let dateColIdx = 0;
+    let timeColIdx = 1;
+    const headerRow = sheet.getRow(1);
+    if (headerRow) {
+      headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const val = String(cell.value || '').toLowerCase().trim();
+        if (val.includes('date') || val.includes('日期')) {
+          dateColIdx = colNumber - 1;
+        } else if (val.includes('time') || val.includes('时间')) {
+          timeColIdx = colNumber - 1;
+        }
+      });
+    }
+
+    const sheetTargets = [[dateColIdx, 'Date'], [timeColIdx, 'Time']];
+
     for (let row = 2; row <= sheet.rowCount; row++) {
-      for (const [colIdx, role] of targets) {
+      for (const [colIdx, role] of sheetTargets) {
         if (colIdx === null || colIdx === undefined) continue;
         const cell = sheet.getRow(row).getCell(colIdx + 1);
         const dt = tryParseAnyDate(cell.value);
@@ -431,7 +450,7 @@ export function taskSmartFormat(workbook, dateFormat, timeFormat, targets) {
         count++;
       }
     }
-  });
+  }
 
   return count;
 }
@@ -448,8 +467,6 @@ export function taskSmartFormat(workbook, dateFormat, timeFormat, targets) {
  */
 export async function processFile(file, params, logFunc, progressFunc) {
   const { dateFormat, timeFormat, threshold, activeTasks } = params;
-  const targets = [[0, 'Date'], [1, 'Time']];
-  const protectedCols = new Set([0, 1]);
 
   logFunc(`[*] Processing: ${file.name}`);
 
@@ -467,11 +484,11 @@ export async function processFile(file, params, logFunc, progressFunc) {
     await workbook.xlsx.load(await file.arrayBuffer());
   }
 
-  let sheetCount = 0;
-  workbook.eachSheet(() => sheetCount++);
+  const sheets = workbook.worksheets;
+  const sheetCount = sheets.length;
   let currentSheet = 0;
 
-  workbook.eachSheet(sheet => {
+  for (const sheet of sheets) {
     currentSheet++;
     const maxRow = sheet.rowCount;
     const maxCol = sheet.columnCount;
@@ -487,45 +504,66 @@ export async function processFile(file, params, logFunc, progressFunc) {
       }
       rows.push(row);
     }
-    if (!rows.length) return;
+    if (!rows.length) continue;
+
+    // Dynamically detect Date and Time columns by reading row 1 headers
+    let dateColIdx = 0;
+    let timeColIdx = 1;
+    const headerRow = sheet.getRow(1);
+    if (headerRow) {
+      headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const val = String(cell.value || '').toLowerCase().trim();
+        if (val.includes('date') || val.includes('日期')) {
+          dateColIdx = colNumber - 1;
+        } else if (val.includes('time') || val.includes('时间')) {
+          timeColIdx = colNumber - 1;
+        }
+      });
+    }
+
+    const sheetTargets = [[dateColIdx, 'Date'], [timeColIdx, 'Time']];
+    const sheetProtectedCols = new Set([dateColIdx, timeColIdx]);
 
     if (activeTasks.has('date_format')) {
-      taskSwapDate(rows, 0);
-      logFunc('    + Swapped Day/Month in Col A.');
+      taskSwapDate(rows, dateColIdx);
+      logFunc(`    + Swapped Day/Month in Col ${String.fromCharCode(65 + dateColIdx)}.`);
     }
 
     if (activeTasks.has('fix_missing')) {
-      taskFixMissing(rows, threshold, protectedCols);
+      taskFixMissing(rows, threshold, sheetProtectedCols);
       logFunc(`    + Filled numeric gaps (threshold: ${threshold}).`);
     }
 
     if (activeTasks.has('standard_1440')) {
-      const normalized = taskStandardize1440(rows, 0, 1);
+      const normalized = taskStandardize1440(rows, dateColIdx, timeColIdx);
       rows.length = 0;
       rows.push(...normalized);
       logFunc(`    + Standardized to 1440 rows (result: ${rows.length}).`);
     }
 
     if (activeTasks.has('date_to_value')) {
-      taskDateToValue(rows, targets);
+      taskDateToValue(rows, sheetTargets);
       logFunc('    + Converted Date/Time to Excel serial values.');
     }
 
     // Write processed rows back to sheet
-    for (let r = sheet.rowCount; r >= 2; r--) sheet.spliceRows(r, 1);
+    const rowCount = sheet.rowCount;
+    for (let i = rowCount; i > 1; i--) {
+      sheet.spliceRows(i, 1);
+    }
     for (const row of rows) {
       const r = sheet.addRow(row);
       // Convert Date objects in the time column to TIME() formula if not converting to float value
-      if (!activeTasks.has('date_to_value') && r.getCell(2).value instanceof Date) {
-        const d = r.getCell(2).value;
-        r.getCell(2).value = { formula: `TIME(${d.getHours()},${d.getMinutes()},${d.getSeconds()})` };
+      if (!activeTasks.has('date_to_value') && r.getCell(timeColIdx + 1).value instanceof Date) {
+        const d = r.getCell(timeColIdx + 1).value;
+        r.getCell(timeColIdx + 1).value = { formula: `TIME(${d.getHours()},${d.getMinutes()},${d.getSeconds()})` };
       }
     }
-  });
+  }
 
   if (activeTasks.has('date_format')) {
     logFunc('  - Applying smart visual formatting...');
-    const styled = taskSmartFormat(workbook, dateFormat, timeFormat, targets);
+    const styled = taskSmartFormat(workbook, dateFormat, timeFormat);
     logFunc(`    + Styled ${styled} cells.`);
   }
 
